@@ -5,9 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"matasano/ds"
-	"math"
 	"sort"
-	"strings"
 )
 
 func main() {
@@ -18,9 +16,9 @@ func main() {
 		panic("Whoopsie, something went super wrong.")
 	}
 
-	for _, v := range alpha_array {
-		s := string(decrypt(cipher, v))
-		d := ds.NewDecipheredString(s, v, chi_square_sum(s))
+	for _, v := range ds.ALPHA_ARRAY {
+		s := string(ds.Decrypt(cipher, v))
+		d := ds.NewDecipheredString(s, v, ds.ChiSquareSum(s))
 		dsc = append(dsc, *d)
 	}
 

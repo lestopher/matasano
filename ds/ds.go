@@ -1,10 +1,13 @@
 package ds
 
-import "strings"
+import (
+	"math"
+	"strings"
+)
 
-const alphabet string = "abcdefghijklmnopqrstuvwxyz"
+const alphabet string = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,./<>?;':\"[]\\{}|`~!@#$%^&*()_+-="
 
-var alpha_array []string = strings.Split(alphabet, "")
+var ALPHA_ARRAY []string = strings.Split(alphabet, "")
 
 // Frequency distributions of english letters a-z
 var frequencies = []float64{
@@ -30,33 +33,55 @@ func NewDecipheredString(deciphered_string string, key string, chi_square_score 
 type DecipheredStringCollection []DecipheredString
 
 // Implements Sort interface
-func (slice DecipheredStringCollection) Len() int {
-	return len(slice)
+func (dsc DecipheredStringCollection) Len() int {
+	return len(dsc)
 }
 
-func (slice DecipheredStringCollection) Less(one, two int) bool {
-	return slice[one].ChiSquareScore > slice[two].ChiSquareScore
+func (dsc DecipheredStringCollection) Less(one, two int) bool {
+	return dsc[one].ChiSquareScore > dsc[two].ChiSquareScore
 }
 
-func (slice DecipheredStringCollection) Swap(one, two int) {
-	slice[one], slice[two] = slice[two], slice[one]
+func (dsc DecipheredStringCollection) Swap(one, two int) {
+	dsc[one], dsc[two] = dsc[two], dsc[one]
+}
+
+func Cleanup(dsc DecipheredStringCollection) DecipheredStringCollection {
+	var good DecipheredStringCollection
+	var itsBad bool = false
+	for _, ds := range dsc {
+		for _, letter := range ds.String {
+			if letter < 0x20 || letter > 0x7e {
+				itsBad = true
+			}
+			if letter < 0x20 && (letter == 0x0a || letter == 0x0d || letter == 0x09) {
+				itsBad = false
+			}
+		}
+		if !itsBad {
+			if float64(LengthCharsOnly(ds.String))/float64(len(ds.String)) > 0.74 {
+				good = append(good, ds)
+			}
+		}
+		itsBad = false
+	}
+	return good
 }
 
 func Decrypt(cipher []byte, key string) []byte {
 	result := make([]byte, len(cipher))
-	for i := range cipher {
-		result[i] = (cipher[i] ^ 0x20) ^ []byte(key)[0]
+	for i, c := range cipher {
+		result[i] = c ^ []byte(key)[0]
 	}
 	return result
 }
 
 func ChiSquareSum(c string) float64 {
-	length := len_chars_only(c)
 	letterMap := make(map[rune]int)
 	var sum float64
 
 	// Get a count of how many times a letter occurs
 	for _, char := range c {
+		char |= 0x20
 		if 'a' <= char && char <= 'z' {
 			_, ok := letterMap[char]
 			if ok {
@@ -68,8 +93,8 @@ func ChiSquareSum(c string) float64 {
 	}
 
 	for key, value := range letterMap {
-		expectedFreq := frequencies[(int(key)-int('a'))%26] * float64(length)
-		sum += math.Pow((float64(value)-expectedFreq), 2) / expectedFreq
+		expectedfreq := frequencies[(int(key)-int('a'))%26] * float64(len(c))
+		sum += math.Pow((float64(value)-expectedfreq), 2) / expectedfreq
 	}
 
 	return sum
@@ -78,6 +103,7 @@ func ChiSquareSum(c string) float64 {
 func LengthCharsOnly(c string) int {
 	length := 0
 	for _, char := range c {
+		char |= 0x20
 		if 'a' <= char && char <= 'z' {
 			length += 1
 		}

@@ -1,11 +1,10 @@
-package main
+package ex5
 
 import (
 	"encoding/hex"
-	"fmt"
 )
 
-func encrypt(s, key []byte) string {
+func Encrypt(s, key []byte) string {
 	cipher := make([]byte, len(s))
 
 	for i := range s {
@@ -13,11 +12,4 @@ func encrypt(s, key []byte) string {
 	}
 
 	return hex.EncodeToString(cipher)
-}
-
-func main() {
-	s := []byte("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal")
-	key := []byte("ICE")
-
-	fmt.Println(encrypt(s, key))
 }
