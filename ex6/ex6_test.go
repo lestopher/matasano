@@ -1,6 +1,7 @@
 package ex6
 
 import "testing"
+import "fmt"
 
 func TestHamdist(t *testing.T) {
 	var one = []byte{1, 0, 1, 1, 1, 0, 1}
@@ -27,3 +28,23 @@ func TestHamdist(t *testing.T) {
 		t.Log("String comparison passed.")
 	}
 }
+
+func TestToBlockCollection(t *testing.T) {
+	const keysize int = 2
+	b := []byte("hello world")
+	blockCollection := ToBlockCollection(b, keysize)
+	fmt.Println(blockCollection)
+}
+
+// func TestTransposedBlocks(t *testing.T) {
+// 	matrix1 := [][]byte{[1, 2]}
+// 	matrix1expected := [][]byte{[1], [2]}
+// 	matrix2 := [][]byte{[1, 2], [3, 4]}
+// 	matrix2expected := [][]byte{[1, 3], [2, 4]}
+// 	matrix3 := [][]byte{[1, 2], [3, 4], [5, 6]}
+// 	matrix3expected := [][]byte{[1, 3, 5], [2, 4, 6]}
+
+// }
+// func TestSmallestHamdist(t *testing.T) {
+// G
+// }

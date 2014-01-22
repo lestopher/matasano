@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"matasano/ds"
 	"os"
-	"sort"
+	// "sort"
 )
 
 func main() {
@@ -28,15 +28,17 @@ func main() {
 		inputDataArr = append(inputDataArr, input)
 	}
 
-	for _, byteArray := range inputDataArr {
-		for i := 0; i < 128; i++ {
-			s := string(ds.Decrypt(byteArray, string(i)))
-			d := ds.NewDecipheredString(s, string(i), ds.ChiSquareSum(s))
-			dsc = append(dsc, *d)
-		}
-	}
+	// for _, byteArray := range inputDataArr {
+	// 	for i := 0; i < 128; i++ {
+	// 		s := string(ds.Decrypt(byteArray, string(i)))
+	// 		d := ds.NewDecipheredString(s, string(i), ds.ChiSquareSum(s))
+	// 		dsc = append(dsc, *d)
+	// 	}
+	// }
 
-	sort.Sort(sort.Reverse(dsc))
-	dsc = ds.Cleanup(dsc)
+	// sort.Sort(sort.Reverse(dsc))
+	// dsc = ds.Cleanup(dsc)
+
+	dsc = ds.BestGuessOnCollection(inputDataArr)
 	fmt.Printf("%f - %s - KEY - %s\n", dsc[0].ChiSquareScore, dsc[0].Key, dsc[0].String)
 }

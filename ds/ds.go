@@ -2,6 +2,7 @@ package ds
 
 import (
 	"math"
+	"sort"
 	"strings"
 )
 
@@ -58,7 +59,8 @@ func Cleanup(dsc DecipheredStringCollection) DecipheredStringCollection {
 			}
 		}
 		if !itsBad {
-			if float64(LengthCharsOnly(ds.String))/float64(len(ds.String)) > 0.74 {
+			// if float64(LengthCharsOnly(ds.String))/float64(len(ds.String)) > 0.74 {
+			if float64(LengthCharsOnly(ds.String))/float64(len(ds.String)) > 0.5 {
 				good = append(good, ds)
 			}
 		}
@@ -69,8 +71,11 @@ func Cleanup(dsc DecipheredStringCollection) DecipheredStringCollection {
 
 func Decrypt(cipher []byte, key string) []byte {
 	result := make([]byte, len(cipher))
+	keyByteArray := []byte(key)
+
 	for i, c := range cipher {
-		result[i] = c ^ []byte(key)[0]
+		// result[i] = c ^ []byte(key)[0]
+		result[i] = c ^ keyByteArray[i%len(keyByteArray)]
 	}
 	return result
 }
@@ -109,4 +114,36 @@ func LengthCharsOnly(c string) int {
 		}
 	}
 	return length
+}
+
+func BestGuessOnCollection(input [][]byte) DecipheredStringCollection {
+	var dsc DecipheredStringCollection
+
+	for _, byteArray := range input {
+		for i := 32; i < 128; i++ {
+			s := string(Decrypt(byteArray, string(i)))
+			d := NewDecipheredString(s, string(i), ChiSquareSum(s))
+			dsc = append(dsc, *d)
+		}
+	}
+
+	sort.Sort(sort.Reverse(dsc))
+	dsc = Cleanup(dsc)
+
+	return dsc
+}
+
+func BestGuess(input []byte) DecipheredStringCollection {
+	var dsc DecipheredStringCollection
+
+	for i := 32; i < 128; i++ {
+		s := string(Decrypt(input, string(i)))
+		d := NewDecipheredString(s, string(i), ChiSquareSum(s))
+		dsc = append(dsc, *d)
+	}
+
+	sort.Sort(sort.Reverse(dsc))
+	dsc = Cleanup(dsc)
+
+	return dsc
 }
