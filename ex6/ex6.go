@@ -3,7 +3,27 @@ package ex6
 import (
 	"fmt"
 	"matasano/ex2"
+	"sort"
 )
+
+type Keysize struct {
+	Keysize  int
+	NHamdist float64
+}
+
+type KeysizeCollection []Keysize
+
+func (k KeysizeCollection) Len() int {
+	return len(k)
+}
+
+func (k KeysizeCollection) Swap(i, j int) {
+	k[i], k[j] = k[j], k[i]
+}
+
+func (k KeysizeCollection) Less(i, j int) bool {
+	return k[i].NHamdist < k[j].NHamdist
+}
 
 func Hamdist(x, y []byte) int {
 	dist := 0
@@ -27,8 +47,6 @@ func SmallestHamdist(s []byte) (int, float64) {
 	var potentialN float64
 
 	for KEYSIZE := 2; KEYSIZE <= 128; KEYSIZE++ {
-		// if len(s)%KEYSIZE == 0 {
-		fmt.Println(KEYSIZE)
 		bytes := [][]byte{s[0:KEYSIZE], s[KEYSIZE : KEYSIZE*2], s[KEYSIZE*2 : KEYSIZE*3], s[KEYSIZE*3 : KEYSIZE*4]}
 
 		for outerIndex, outerVal := range bytes {
@@ -43,10 +61,32 @@ func SmallestHamdist(s []byte) (int, float64) {
 			potentialK = KEYSIZE
 			potentialN = res
 		}
-		// }
 	}
 
 	return potentialK, potentialN
+}
+
+func Top5Keysizes(s []byte) KeysizeCollection {
+	var res float64
+	var ksc KeysizeCollection
+
+	for KEYSIZE := 2; KEYSIZE <= 40; KEYSIZE++ {
+		bytes := [][]byte{s[0:KEYSIZE], s[KEYSIZE : KEYSIZE*2], s[KEYSIZE*2 : KEYSIZE*3], s[KEYSIZE*3 : KEYSIZE*4]}
+
+		for outerIndex, outerVal := range bytes {
+			for _, innerVal := range bytes[outerIndex:] {
+				res += NormalizedHamdist(Hamdist(outerVal, innerVal), KEYSIZE)
+			}
+		}
+
+		res /= 6.
+
+		ksc = append(ksc, Keysize{KEYSIZE, res})
+	}
+
+	sort.Sort(ksc)
+
+	return ksc[0:6]
 }
 
 func NormalizedHamdist(hamdist, keysize int) float64 {
@@ -54,14 +94,22 @@ func NormalizedHamdist(hamdist, keysize int) float64 {
 }
 
 func TransposeBlocks(blocks [][]byte) ([][]byte, int) {
-	// A transposed block's length is the same as the length of the first element
-	// you're transposing
-	transposedBlocks := make([][]byte, len(blocks[0]))
+	// For an MxN matrix, you need to create an NxM matrix
+	// Then loop through and fill in the data
+	mLen := len(blocks)
+	nLen := len(blocks[0])
+
+	// The "N" part of it
+	transposedBlocks := make([][]byte, nLen)
+	tbContent := make([]byte, nLen*mLen)
 
 	for i := range transposedBlocks {
-		transposedBlocks[i] = make([]byte, len(blocks))
-		for j := range blocks {
-			transposedBlocks[i][j] = blocks[j][i]
+		transposedBlocks[i], tbContent = tbContent[:mLen], tbContent[mLen:]
+	}
+
+	for i := range blocks {
+		for j := range transposedBlocks {
+			transposedBlocks[j][i] = blocks[i][j]
 		}
 	}
 
@@ -69,15 +117,19 @@ func TransposeBlocks(blocks [][]byte) ([][]byte, int) {
 }
 
 func ToBlockCollection(byteArray []byte, keysize int) ([][]byte, int) {
-	if len(byteArray)%keysize != 0 {
-		panic("byteArray is not evenly divisible by keysize")
+	ba := byteArray
+
+	if len(ba)%keysize != 0 {
+		fmt.Println("byteArray length not divisible by keysize, zerofilling.")
+		zerofill := make([]byte, keysize-(len(ba)%keysize))
+		ba = append(ba, zerofill...)
 	}
 
-	collection := make([][]byte, len(byteArray)/keysize)
+	collection := make([][]byte, len(ba)/keysize)
 	collectionIndex := 0
 
-	for i := 0; i < len(byteArray); i += keysize {
-		collection[collectionIndex] = byteArray[i : i+keysize]
+	for i := 0; i < len(ba); i += keysize {
+		collection[collectionIndex] = ba[i : i+keysize]
 		collectionIndex++
 	}
 

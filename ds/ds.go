@@ -1,6 +1,7 @@
 package ds
 
 import (
+	"fmt"
 	"math"
 	"sort"
 	"strings"
@@ -12,18 +13,22 @@ var ALPHA_ARRAY []string = strings.Split(alphabet, "")
 
 // Frequency distributions of english letters a-z
 var frequencies = []float64{
-	.0817, .0149, .0278, .0425, .1270, .0223, .0202, .0609, .0697, .0015, .0077, .0402, .0241,
-	.0675, .0751, .0193, .0009, .0599, .0633, .0906, .0276, .0098, .0236, .0015, .0197, .0007,
+	0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015, 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406,
+	0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056, 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074,
 }
 
 type DecipheredString struct {
-	String, Key    string
+	Dstring, Key   string
 	ChiSquareScore float64
+}
+
+func (ds DecipheredString) String() string {
+	return fmt.Sprintf("%s: %f", ds.Key, ds.ChiSquareScore)
 }
 
 func NewDecipheredString(deciphered_string string, key string, chi_square_score float64) (ds *DecipheredString) {
 	ds = &DecipheredString{
-		String:         deciphered_string,
+		Dstring:        deciphered_string,
 		Key:            key,
 		ChiSquareScore: chi_square_score,
 	}
@@ -39,7 +44,7 @@ func (dsc DecipheredStringCollection) Len() int {
 }
 
 func (dsc DecipheredStringCollection) Less(one, two int) bool {
-	return dsc[one].ChiSquareScore > dsc[two].ChiSquareScore
+	return dsc[one].ChiSquareScore < dsc[two].ChiSquareScore
 }
 
 func (dsc DecipheredStringCollection) Swap(one, two int) {
@@ -50,17 +55,40 @@ func Cleanup(dsc DecipheredStringCollection) DecipheredStringCollection {
 	var good DecipheredStringCollection
 	var itsBad bool = false
 	for _, ds := range dsc {
-		for _, letter := range ds.String {
+		tildeCount := 0
+		backtickCount := 0
+
+		for _, letter := range ds.Dstring {
 			if letter < 0x20 || letter > 0x7e {
 				itsBad = true
 			}
+
+			// OK symbols \n, \r, \t
 			if letter < 0x20 && (letter == 0x0a || letter == 0x0d || letter == 0x09) {
 				itsBad = false
 			}
+
+			// tilde ~
+			if letter == 0x7e {
+				tildeCount++
+				if tildeCount > 3 {
+					itsBad = true
+				}
+			}
+
+			// backtick `
+			if letter == 0x60 {
+				backtickCount++
+			}
+		}
+
+		// If we have an uneven amount of backticks, probably bad
+		if backtickCount%2 != 0 {
+			itsBad = true
 		}
 		if !itsBad {
-			// if float64(LengthCharsOnly(ds.String))/float64(len(ds.String)) > 0.74 {
-			if float64(LengthCharsOnly(ds.String))/float64(len(ds.String)) > 0.5 {
+			// Check the ratio of letters to symbols... arbitrarily chose 60%
+			if float64(LengthCharsOnly(ds.Dstring))/float64(len(ds.Dstring)) > 0.6 {
 				good = append(good, ds)
 			}
 		}
@@ -74,35 +102,30 @@ func Decrypt(cipher []byte, key string) []byte {
 	keyByteArray := []byte(key)
 
 	for i, c := range cipher {
-		// result[i] = c ^ []byte(key)[0]
 		result[i] = c ^ keyByteArray[i%len(keyByteArray)]
 	}
 	return result
 }
 
-func ChiSquareSum(c string) float64 {
-	letterMap := make(map[rune]int)
-	var sum float64
+func ChiSquareSum(c string) (float64, float64) {
+	var englishDist, uniformDist float64
+	counts := make([]int, 26)
+	lengthChars := float64(LengthCharsOnly(c))
 
 	// Get a count of how many times a letter occurs
 	for _, char := range c {
 		char |= 0x20
 		if 'a' <= char && char <= 'z' {
-			_, ok := letterMap[char]
-			if ok {
-				letterMap[char] += 1
-			} else {
-				letterMap[char] = 1
-			}
+			counts[int(char)-97]++
 		}
 	}
 
-	for key, value := range letterMap {
-		expectedfreq := frequencies[(int(key)-int('a'))%26] * float64(len(c))
-		sum += math.Pow((float64(value)-expectedfreq), 2) / expectedfreq
+	for i := 0; i < 26; i++ {
+		englishDist += math.Pow((float64(counts[i])-(lengthChars*frequencies[i])), 2) / (lengthChars * frequencies[i])
+		uniformDist += math.Pow((float64(counts[i])-(lengthChars/26.0)), 2) / (lengthChars / 26.0)
 	}
 
-	return sum
+	return englishDist, uniformDist
 }
 
 func LengthCharsOnly(c string) int {
@@ -110,7 +133,7 @@ func LengthCharsOnly(c string) int {
 	for _, char := range c {
 		char |= 0x20
 		if 'a' <= char && char <= 'z' {
-			length += 1
+			length++
 		}
 	}
 	return length
@@ -122,13 +145,14 @@ func BestGuessOnCollection(input [][]byte) DecipheredStringCollection {
 	for _, byteArray := range input {
 		for i := 32; i < 128; i++ {
 			s := string(Decrypt(byteArray, string(i)))
-			d := NewDecipheredString(s, string(i), ChiSquareSum(s))
+			cs, _ := ChiSquareSum(s)
+			d := NewDecipheredString(s, string(i), cs)
 			dsc = append(dsc, *d)
 		}
+		// dsc = Cleanup(dsc)
 	}
 
-	sort.Sort(sort.Reverse(dsc))
-	dsc = Cleanup(dsc)
+	sort.Sort(dsc)
 
 	return dsc
 }
@@ -138,12 +162,13 @@ func BestGuess(input []byte) DecipheredStringCollection {
 
 	for i := 32; i < 128; i++ {
 		s := string(Decrypt(input, string(i)))
-		d := NewDecipheredString(s, string(i), ChiSquareSum(s))
+		cs, _ := ChiSquareSum(s)
+		d := NewDecipheredString(s, string(i), cs)
 		dsc = append(dsc, *d)
+		// dsc = Cleanup(dsc)
 	}
 
-	sort.Sort(sort.Reverse(dsc))
-	dsc = Cleanup(dsc)
+	sort.Sort(dsc)
 
 	return dsc
 }

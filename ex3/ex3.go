@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"matasano/ds"
-	"sort"
 )
 
 func main() {
@@ -16,13 +15,7 @@ func main() {
 		panic("Whoopsie, something went super wrong.")
 	}
 
-	for _, v := range ds.ALPHA_ARRAY {
-		s := string(ds.Decrypt(cipher, v))
-		d := ds.NewDecipheredString(s, v, ds.ChiSquareSum(s))
-		dsc = append(dsc, *d)
-	}
-
-	sort.Sort(sort.Reverse(dsc))
-
-	fmt.Printf("KEY - %s - %s\n", dsc[0].Key, dsc[0].String)
+	dsc = ds.BestGuess(cipher)
+	fmt.Println(dsc)
+	fmt.Println(dsc[0].Dstring)
 }

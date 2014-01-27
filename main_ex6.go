@@ -38,17 +38,32 @@ func main() {
 
 	// Returns the most probable keysize and the hamming distance
 	key, _ := ex6.SmallestHamdist(byteArray)
+	ksc := ex6.Top5Keysizes(byteArray)
+	fmt.Println(ksc)
 
 	fmt.Println("key is", key)
-	blockCollection, _ := ex6.ToBlockCollection(byteArray, 4)
+	blockCollection, bcLength := ex6.ToBlockCollection(byteArray, 29)
+	fmt.Println("bcLength is", bcLength)
 
-	transposedBlockCollection, _ := ex6.TransposeBlocks(blockCollection)
+	transposedBlockCollection, tbcLength := ex6.TransposeBlocks(blockCollection)
+	fmt.Println("tbcLength is", tbcLength)
 
-	for _, block := range transposedBlockCollection {
+	for i, block := range transposedBlockCollection {
+		fmt.Println("length block", len(block))
+		s := ds.Cleanup(ds.BestGuess(block))
+		if i == 24 {
+			fmt.Println(s[0].Dstring)
+		}
 		// s := ds.BestGuess(block)
-		likelyKey += string(ds.BestGuess(block)[0].Key)
+		// fmt.Println(ds.Cleanup(s))
+		if len(s) > 0 {
+			likelyKey += string(s[0].Key)
+		} else {
+			likelyKey += "^"
+		}
+		// likelyKey += string(s[0].Key)
 	}
 
 	fmt.Println("Key is", likelyKey)
-	fmt.Println(string(ds.Decrypt(byteArray, likelyKey)))
+	// fmt.Println(string(ds.Decrypt(byteArray, likelyKey)))
 }

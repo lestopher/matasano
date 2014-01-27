@@ -29,11 +29,16 @@ func TestLengthCharsOnly(t *testing.T) {
 
 func TestChiSquareSum(t *testing.T) {
 	const testString = "Defend the east wall of the castle"
-	const expectedSum = 18.528310082299488
+	const expectedEnglishSum = 18.528310082299488
+	const expectedUniformSum = 55.571428571428605
 
-	result := ChiSquareSum(testString)
+	englishDist, uniformDist := ChiSquareSum(testString)
 
-	if result != expectedSum {
-		t.Errorf("Expected %f, but got %f\n", expectedSum, result)
+	if englishDist != expectedEnglishSum {
+		t.Errorf("Expected %f, but got %f\n", expectedEnglishSum, englishDist)
+	}
+
+	if uniformDist != expectedUniformSum {
+		t.Errorf("Expected %f, but got %f\n", expectedUniformSum, uniformDist)
 	}
 }
