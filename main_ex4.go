@@ -4,15 +4,15 @@ import (
 	"bufio"
 	"encoding/hex"
 	"fmt"
-	"matasano/ds"
+	"matasano/ex3"
 	"os"
 )
 
 func main() {
 	var inputDataArr [][]byte
-	var dsc ds.DecipheredStringCollection
+	var dsc ex3.DecipheredStringCollection
 
-	file, err := os.Open("../data/gistfile.txt")
+	file, err := os.Open("./data/ex4_gistfile.txt")
 
 	if err != nil {
 		panic("Couldn't open file.")
@@ -27,8 +27,6 @@ func main() {
 		inputDataArr = append(inputDataArr, input)
 	}
 
-	dsc = ds.BestGuessOnCollection(inputDataArr)
-	// fmt.Printf("%f - %s - KEY - %s\n", dsc[0].ChiSquareScore, dsc[0].Key, dsc[0].String)
-	fmt.Println(ds.Cleanup(dsc)[0].Dstring)
-	// fmt.Println(dsc[:16])
+	dsc = ex3.BestGuessOnCollection(inputDataArr)
+	fmt.Println(ex3.Cleanup(dsc)[0].Dstring)
 }

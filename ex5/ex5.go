@@ -1,8 +1,6 @@
 package ex5
 
-import (
-	"encoding/hex"
-)
+import "encoding/hex"
 
 func Encrypt(s, key []byte) string {
 	cipher := make([]byte, len(s))

@@ -6,6 +6,8 @@ import (
 	"sort"
 )
 
+type BlockCollection [][]byte
+
 type Keysize struct {
 	Keysize  int
 	NHamdist float64
@@ -93,14 +95,14 @@ func NormalizedHamdist(hamdist, keysize int) float64 {
 	return float64(hamdist) / float64(keysize)
 }
 
-func TransposeBlocks(blocks [][]byte) ([][]byte, int) {
+func TransposeBlocks(blocks BlockCollection) (BlockCollection, int) {
 	// For an MxN matrix, you need to create an NxM matrix
 	// Then loop through and fill in the data
 	mLen := len(blocks)
 	nLen := len(blocks[0])
 
 	// The "N" part of it
-	transposedBlocks := make([][]byte, nLen)
+	transposedBlocks := make(BlockCollection, nLen)
 	tbContent := make([]byte, nLen*mLen)
 
 	for i := range transposedBlocks {
@@ -116,7 +118,7 @@ func TransposeBlocks(blocks [][]byte) ([][]byte, int) {
 	return transposedBlocks, len(transposedBlocks)
 }
 
-func ToBlockCollection(byteArray []byte, keysize int) ([][]byte, int) {
+func ToBlockCollection(byteArray []byte, keysize int) (BlockCollection, int) {
 	ba := byteArray
 
 	if len(ba)%keysize != 0 {
@@ -125,7 +127,7 @@ func ToBlockCollection(byteArray []byte, keysize int) ([][]byte, int) {
 		ba = append(ba, zerofill...)
 	}
 
-	collection := make([][]byte, len(ba)/keysize)
+	collection := make(BlockCollection, len(ba)/keysize)
 	collectionIndex := 0
 
 	for i := 0; i < len(ba); i += keysize {

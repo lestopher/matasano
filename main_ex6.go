@@ -4,15 +4,14 @@ import (
 	"bufio"
 	"encoding/base64"
 	"fmt"
-	"matasano/ds"
+	"matasano/ex3"
 	"matasano/ex6"
 	"os"
 )
 
 func main() {
-	file, err := os.Open("./data/gistfile2.txt")
+	file, err := os.Open("./data/ex6_gistfile.txt")
 	var input, likelyKey string
-	// var input string
 
 	if err != nil {
 		panic("Couldn't open file.")
@@ -36,34 +35,27 @@ func main() {
 		fmt.Errorf("Error decoding base64 string to byteArray: %s\n", b64Err)
 	}
 
-	// Returns the most probable keysize and the hamming distance
-	key, _ := ex6.SmallestHamdist(byteArray)
-	ksc := ex6.Top5Keysizes(byteArray)
-	fmt.Println(ksc)
+	probableKeysizes := ex6.Top5Keysizes(byteArray)
+	probableByteArrays := make([]ex6.BlockCollection, 6)
 
-	fmt.Println("key is", key)
-	blockCollection, bcLength := ex6.ToBlockCollection(byteArray, 29)
-	fmt.Println("bcLength is", bcLength)
+	for i, ks := range probableKeysizes {
+		blockCollection, _ := ex6.ToBlockCollection(byteArray, ks.Keysize)
+		transposedBlockCollection, _ := ex6.TransposeBlocks(blockCollection)
+		probableByteArrays[i] = transposedBlockCollection
+	}
 
-	transposedBlockCollection, tbcLength := ex6.TransposeBlocks(blockCollection)
-	fmt.Println("tbcLength is", tbcLength)
+	for _, tbc := range probableByteArrays {
+		for _, block := range tbc {
+			s := ex3.Cleanup(ex3.BestGuess([]byte(block)))
 
-	for i, block := range transposedBlockCollection {
-		fmt.Println("length block", len(block))
-		s := ds.Cleanup(ds.BestGuess(block))
-		if i == 24 {
-			fmt.Println(s[0].Dstring)
+			if len(s) > 0 {
+				likelyKey += string(s[0].Key)
+			}
 		}
-		// s := ds.BestGuess(block)
-		// fmt.Println(ds.Cleanup(s))
-		if len(s) > 0 {
-			likelyKey += string(s[0].Key)
-		} else {
-			likelyKey += "^"
+		if len(likelyKey) > 0 {
+			break
 		}
-		// likelyKey += string(s[0].Key)
 	}
 
 	fmt.Println("Key is", likelyKey)
-	// fmt.Println(string(ds.Decrypt(byteArray, likelyKey)))
 }

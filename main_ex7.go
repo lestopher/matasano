@@ -12,7 +12,7 @@ import (
 func main() {
 	var input string
 	key := []byte("YELLOW SUBMARINE")
-	file, err := os.Open("../data/ex7_gistfile.txt")
+	file, err := os.Open("./data/ex7_gistfile.txt")
 	defer file.Close()
 
 	if err != nil {
@@ -38,18 +38,15 @@ func main() {
 	}
 
 	iv := make([]byte, aes.BlockSize)
-	// iv := byteArray[:aes.BlockSize]
-	// byteArray = byteArray[aes.BlockSize:]
 
 	if len(byteArray)%aes.BlockSize != 0 {
 		panic("byteArray is not a multiple of the block size")
 	}
 
-	// mode := cipher.NewCBCDecrypter(block, iv)
-
 	answer := make([]byte, aes.BlockSize)
 	temp := make([]byte, aes.BlockSize)
 
+	// Is there a better way to do this if there's no initialization vector?
 	for i := 0; i < len(byteArray); i += aes.BlockSize {
 		mode := cipher.NewCBCDecrypter(block, iv)
 		mode.CryptBlocks(temp, byteArray[i:i+aes.BlockSize])

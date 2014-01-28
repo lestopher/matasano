@@ -1,4 +1,4 @@
-package ds
+package ex3
 
 import "testing"
 
