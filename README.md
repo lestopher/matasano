@@ -1,4 +1,4 @@
-matasano-crypto
+matasano-crypto: http://cryptopals.com/
 ===============
 
 To run test on specific package, run:  
