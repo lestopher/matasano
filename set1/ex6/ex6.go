@@ -2,7 +2,7 @@ package ex6
 
 import (
 	"fmt"
-	"matasano/ex2"
+	"github.com/lestopher/matasano/set1/ex2"
 	"sort"
 )
 

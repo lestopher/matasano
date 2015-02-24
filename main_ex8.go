@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/hex"
 	. "fmt"
-	"matasano/ex8"
+	"github.com/lestopher/matasano/set1/ex8"
 	"os"
 )
 

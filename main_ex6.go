@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"encoding/base64"
 	"fmt"
-	"matasano/ex3"
-	"matasano/ex6"
+	"github.com/lestopher/matasano/set1/ex3"
+	"github.com/lestopher/matasano/set1/ex6"
 	"os"
 )
 

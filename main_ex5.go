@@ -2,7 +2,7 @@ package main
 
 import (
 	. "fmt"
-	"matasano/ex5"
+	"github.com/lestopher/matasano/set1/ex5"
 )
 
 func main() {

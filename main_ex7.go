@@ -12,7 +12,7 @@ import (
 func main() {
 	var input string
 	key := []byte("YELLOW SUBMARINE")
-	file, err := os.Open("./data/ex7_gistfile.txt")
+	file, err := os.Open("./data/10.txt")
 	defer file.Close()
 
 	if err != nil {
@@ -28,7 +28,7 @@ func main() {
 	byteArray, b64Err := base64.StdEncoding.DecodeString(input)
 
 	if b64Err != nil {
-		fmt.Errorf("Error decoding base64 string to byteArray: %s\n", b64Err)
+		fmt.Errorf("error decoding base64 string to byteArray: %s\n", b64Err)
 	}
 
 	block, _ := aes.NewCipher(key)
@@ -38,21 +38,26 @@ func main() {
 	}
 
 	iv := make([]byte, aes.BlockSize)
+	for i := range iv {
+		iv[i] = '\x00'
+	}
 
 	if len(byteArray)%aes.BlockSize != 0 {
 		panic("byteArray is not a multiple of the block size")
 	}
 
-	answer := make([]byte, aes.BlockSize)
-	temp := make([]byte, aes.BlockSize)
+	answer := make([]byte, len(byteArray))
+	// answer := make([]byte, aes.BlockSize)
+	// temp := make([]byte, aes.BlockSize)
 
 	// Is there a better way to do this if there's no initialization vector?
-	for i := 0; i < len(byteArray); i += aes.BlockSize {
-		mode := cipher.NewCBCDecrypter(block, iv)
-		mode.CryptBlocks(temp, byteArray[i:i+aes.BlockSize])
+	// for i := 0; i < len(byteArray); i += aes.BlockSize {
+	mode := cipher.NewCBCDecrypter(block, iv)
+	// mode.CryptBlocks(temp, byteArray[i:i+aes.BlockSize])
+	mode.CryptBlocks(answer, byteArray)
 
-		answer = append(answer, temp...)
-	}
+	// answer = append(answer, temp...)
+	// }
 
 	fmt.Printf("%s\n", answer)
 }

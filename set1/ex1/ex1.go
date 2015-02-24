@@ -3,6 +3,7 @@ package ex1
 import (
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 )
 
 /**
@@ -18,4 +19,13 @@ func HexToBase64(hs string) string {
 	}
 
 	return base64.StdEncoding.EncodeToString(hexValue)
+}
+
+func Base64ToHex(s string) string {
+	decoded, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		fmt.Println(s)
+		panic(err)
+	}
+	return hex.EncodeToString(decoded)
 }

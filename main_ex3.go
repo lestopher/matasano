@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/hex"
 	"fmt"
-	"matasano/ex3"
+	"github.com/lestopher/matasano/set1/ex3"
 )
 
 func main() {

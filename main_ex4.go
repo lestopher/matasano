@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"encoding/hex"
 	"fmt"
-	"matasano/ex3"
+	"github.com/lestopher/matasano/set1/ex3"
 	"os"
 )
 

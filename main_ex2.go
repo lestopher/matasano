@@ -4,8 +4,9 @@ package main
 
 import (
 	"encoding/hex"
-	. "fmt"
-	"matasano/ex2"
+	"fmt"
+
+	"github.com/lestopher/matasano/set1/ex2"
 )
 
 func main() {
@@ -15,5 +16,5 @@ func main() {
 	hexStringOne, _ := hex.DecodeString(stringOne)
 	hexStringTwo, _ := hex.DecodeString(stringTwo)
 
-	Println(hex.EncodeToString(ex2.Xor(hexStringOne, hexStringTwo)))
+	fmt.Println(hex.EncodeToString(ex2.Xor(hexStringOne, hexStringTwo)))
 }
